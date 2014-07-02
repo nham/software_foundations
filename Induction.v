@@ -477,7 +477,8 @@ Qed.
 Theorem ble_nat_refl : forall n:nat,
   true = ble_nat n n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. induction n as [| n'].
+  reflexivity. rewrite IHn'. simpl. reflexivity. Qed.
 
 Theorem zero_nbeq_S : forall n:nat,
   beq_nat 0 (S n) = false.
@@ -533,7 +534,10 @@ problem using the theorem no matter which way we state it. *)
 Theorem beq_nat_refl : forall n : nat, 
   true = beq_nat n n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. induction n as [| n'].
+  reflexivity.
+  simpl. rewrite IHn'. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (plus_swap') *)
@@ -551,7 +555,10 @@ Proof.
 Theorem plus_swap' : forall n m p : nat, 
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+   intros n m p. rewrite plus_assoc. rewrite plus_assoc. 
+   replace (n + m) with (m + n). reflexivity.
+   rewrite plus_comm. reflexivity.
+  Qed.
 (** [] *)
 
 
@@ -568,7 +575,47 @@ Proof.
     wanting to change your original definitions to make the property
     easier to prove, feel free to do so.) *)
 
-(* FILL IN HERE *)
+Inductive bnat : Type :=
+  | Z : bnat
+  | D : bnat -> bnat
+  | DPO : bnat -> bnat. (* Double Plus One *)
+
+Fixpoint bnat_inc (n: bnat) : bnat :=
+  match n with
+    | Z => DPO Z
+    | D k => DPO k
+    | DPO k => D (bnat_inc k)
+  end.
+
+Fixpoint bin_to_un (n: bnat) : nat :=
+  match n with
+    | Z => O
+    | D k => double (bin_to_un k)
+    | DPO k => S (double (bin_to_un k))
+  end.
+
+Lemma plus_1_S: forall n : nat, n + 1 = S n.
+Proof.
+  intros n.
+  rewrite plus_comm.
+  reflexivity.
+Qed.
+
+Theorem binary_comm: forall n: bnat,
+    (bin_to_un n) + 1 = bin_to_un (bnat_inc n).
+Proof.
+  intros n. induction n as [| n' | n'].
+  Case "n = Z".
+    simpl. reflexivity.
+  Case "n = D n'".
+    simpl. rewrite plus_1_S. reflexivity.
+  Case "n = DPO n'".
+    simpl. rewrite <- IHn'. 
+    rewrite plus_1_S.
+    rewrite plus_1_S.
+    reflexivity.
+Qed.
+
 (** [] *)
 
 
