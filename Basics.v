@@ -717,7 +717,7 @@ Proof.
 Theorem plus_id_exercise : forall n m o : nat,
   n = m -> m = o -> n + m = m + o.
 Proof.
-  intros. rewrite -> H. rewrite <- H0.
+  intros. rewrite -> H. rewrite <- H0. reflexivity. Qed.
 (** [] *)
 
 (** As we've seen in earlier examples, the [Admitted] command
@@ -836,7 +836,11 @@ Proof.
 Theorem zero_nbeq_plus_1 : forall n : nat,
   beq_nat 0 (n + 1) = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  destruct n.
+  reflexivity.
+reflexivity.
+  Qed.
 (** [] *)
 
 (* ###################################################################### *)
@@ -851,25 +855,36 @@ Theorem identity_fn_applied_twice :
   (forall (x : bool), f x = x) ->
   forall (b : bool), f (f b) = b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros f. intros. rewrite -> H. rewrite -> H. reflexivity.
+  Qed.
 
 (** Now state and prove a theorem [negation_fn_applied_twice] similar
     to the previous one but where the second hypothesis says that the
     function [f] has the property that [f x = negb x].*)
 
-(* FILL IN HERE *)
+Theorem negation_fn_applied_twice : 
+  forall (f : bool -> bool), 
+  (forall (x : bool), f x = negb x) ->
+  forall (b : bool), f (f b) = b.
+Proof.
+intros f. intros. rewrite -> H. rewrite -> H. destruct b. reflexivity. reflexivity.
+  Qed.
 
 (** **** Exercise: 2 stars (andb_eq_orb) *)
 (** Prove the following theorem.  (You may want to first prove a
     subsidiary lemma or two. Alternatively, remember that you do
     not have to introduce all hypotheses at the same time.) *)
 
+Lemma eq_sym: forall b c : bool, b = c -> c = b.
+Proof. intros b c H. rewrite <- H. reflexivity. Qed.
+
 Theorem andb_eq_orb : 
   forall (b c : bool),
   (andb b c = orb b c) ->
   b = c.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b c. destruct b. simpl. intros H. rewrite <- H. reflexivity.
+  simpl. intros H. rewrite <- H. reflexivity. Qed.
 
 (** **** Exercise: 3 stars (binary) *)
 (** Consider a different, more efficient representation of natural
@@ -906,7 +921,44 @@ Proof.
         converting it to unary and then incrementing. 
 *)
 
-(* FILL IN HERE *)
+Module Ex3.
+
+Fixpoint double (n: nat) : nat :=
+  match n with
+    | O => 0
+    | S n => S (S (double n))
+  end.
+
+Inductive bnat : Type :=
+  | Z : bnat
+  | D : bnat -> bnat
+  | DPO : bnat -> bnat. (* Double Plus One *)
+
+Fixpoint bnat_inc (n: bnat) : bnat :=
+  match n with
+    | Z => DPO Z
+    | D k => DPO k
+    | DPO k => D (bnat_inc k)
+  end.
+
+Fixpoint bin_to_un (n: bnat) : nat :=
+  match n with
+    | Z => O
+    | D k => double (bin_to_un k)
+    | DPO k => S (double (bin_to_un k))
+  end.
+
+Example test_bnat_inc_1:  (bnat_inc Z) = DPO Z.
+Proof. reflexivity. Qed.
+
+Example test_bnat_inc_2:  (bnat_inc (DPO Z)) = D (DPO Z).
+Proof. reflexivity. Qed.
+
+Example test_bnat_inc_3:  (bnat_inc (D (DPO (DPO Z)))) = DPO (DPO (DPO Z)).
+Proof. reflexivity. Qed.
+
+End Ex3.
+
 (** [] *)
 
 (* ###################################################################### *)
